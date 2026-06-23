@@ -49,15 +49,15 @@ let sensorCounter = 0;
    2. THREE.JS SETUP
 ═══════════════════════════════════════════════════════════════════════════ */
 
-const canvas   = document.getElementById('three-canvas');
+const canvas = document.getElementById('three-canvas');
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.shadowMap.enabled = true;
-renderer.shadowMap.type    = THREE.PCFSoftShadowMap;
-renderer.outputColorSpace  = THREE.SRGBColorSpace;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.setClearColor(0x0a0c12, 1);
 
-const scene  = new THREE.Scene();
+const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(45, 1, 0.001, 200);
 
 /* ── ROS Z-up convention setup ──────────────────────────────────────────────
@@ -89,8 +89,8 @@ rosGroup.add(gridHelper);
 // We swap axes manually by building custom arrows.
 (function addRosAxesHelper() {
   const origin = new THREE.Vector3(0, 0, 0);
-  const len    = 0.3;
-  const dirs   = [
+  const len = 0.3;
+  const dirs = [
     { dir: new THREE.Vector3(1, 0, 0), color: 0xff4d6d }, // ROS X forward (red)
     { dir: new THREE.Vector3(0, 1, 0), color: 0x4dff91 }, // ROS Y left   (green)
     { dir: new THREE.Vector3(0, 0, 1), color: 0x4d9fff }, // ROS Z up     (blue)
@@ -110,9 +110,9 @@ sunLight.position.set(3, 6, 4);
 sunLight.castShadow = true;
 sunLight.shadow.mapSize.set(2048, 2048);
 sunLight.shadow.camera.near = 0.1;
-sunLight.shadow.camera.far  = 20;
+sunLight.shadow.camera.far = 20;
 sunLight.shadow.camera.left = sunLight.shadow.camera.bottom = -2;
-sunLight.shadow.camera.right = sunLight.shadow.camera.top   =  2;
+sunLight.shadow.camera.right = sunLight.shadow.camera.top = 2;
 scene.add(sunLight);
 
 const fillLight = new THREE.DirectionalLight(0x6c63ff, 0.4);
@@ -129,19 +129,19 @@ camera.lookAt(0, 0, 0.1);
 
 // OrbitControls (imported as ES module)
 const controls = new OrbitControls(camera, renderer.domElement);
-controls.enableDamping    = true;
-controls.dampingFactor    = 0.08;
-controls.minDistance      = 0.15;
-controls.maxDistance      = 12;
+controls.enableDamping = true;
+controls.dampingFactor = 0.08;
+controls.minDistance = 0.15;
+controls.maxDistance = 12;
 controls.target.set(0, 0, 0.1);
 controls.update();
 
 // Shadow catcher floor
 const shadowFloorGeo = new THREE.PlaneGeometry(6, 6);
 const shadowFloorMat = new THREE.ShadowMaterial({ opacity: 0.18 });
-const shadowFloor    = new THREE.Mesh(shadowFloorGeo, shadowFloorMat);
+const shadowFloor = new THREE.Mesh(shadowFloorGeo, shadowFloorMat);
 shadowFloor.receiveShadow = true;
-shadowFloor.rotation.x    = -Math.PI / 2; // world XZ plane (floor)
+shadowFloor.rotation.x = -Math.PI / 2; // world XZ plane (floor)
 scene.add(shadowFloor);
 
 // Resize observer
@@ -168,14 +168,14 @@ resizeObs.observe(canvas.parentElement);
 ═══════════════════════════════════════════════════════════════════════════ */
 
 const MAT = {
-  chassis:     makeMat(0x4a5cad, 0.15, 0.65),
-  wheel:       makeMat(0x1a1f2e, 0.05, 0.35),
-  wheelRim:    makeMat(0x2d3561, 0.3,  0.5),
-  caster:      makeMat(0x888888, 0.1,  0.4),
-  lidar:       makeMat(0xffd166, 0.2,  0.6),
-  camera:      makeMat(0x06d6a0, 0.15, 0.55),
-  depthCamera: makeMat(0x118ab2, 0.2,  0.6),
-  imu:         makeMat(0xef476f, 0.1,  0.5),
+  chassis: makeMat(0x4a5cad, 0.15, 0.65),
+  wheel: makeMat(0x1a1f2e, 0.05, 0.35),
+  wheelRim: makeMat(0x2d3561, 0.3, 0.5),
+  caster: makeMat(0x888888, 0.1, 0.4),
+  lidar: makeMat(0xffd166, 0.2, 0.6),
+  camera: makeMat(0x06d6a0, 0.15, 0.55),
+  depthCamera: makeMat(0x118ab2, 0.2, 0.6),
+  imu: makeMat(0xef476f, 0.1, 0.5),
 };
 
 function makeMat(hexColor, roughness = 0.4, metalness = 0.5) {
@@ -189,11 +189,11 @@ function makeMat(hexColor, roughness = 0.4, metalness = 0.5) {
 
 function sensorMat(type) {
   switch (type) {
-    case 'lidar':        return MAT.lidar;
-    case 'camera':       return MAT.camera;
+    case 'lidar': return MAT.lidar;
+    case 'camera': return MAT.camera;
     case 'depth_camera': return MAT.depthCamera;
-    case 'imu':          return MAT.imu;
-    default:             return MAT.lidar;
+    case 'imu': return MAT.imu;
+    default: return MAT.lidar;
   }
 }
 
@@ -232,37 +232,37 @@ function readState() {
   };
 
   robotState = {
-    robotName:         s('robot-name', 'my_robot'),
-    driveType:         s('drive-type', 'diff'),   // 'diff' | 'skid'
+    robotName: s('robot-name', 'my_robot'),
+    driveType: s('drive-type', 'diff'),   // 'diff' | 'skid'
 
     chassis: {
-      length:  f('chassis-length', 0.40),  // X
-      width:   f('chassis-width',  0.30),  // Y
-      height:  f('chassis-height', 0.12),  // Z
-      mass:    f('chassis-mass',   5.0),
+      length: f('chassis-length', 0.40),  // X
+      width: f('chassis-width', 0.30),  // Y
+      height: f('chassis-height', 0.12),  // Z
+      mass: f('chassis-mass', 5.0),
     },
 
     wheels: {
-      radius:         f('wheel-radius',         0.065),
-      width:          f('wheel-width',           0.030),
-      mass:           f('wheel-mass',            0.25),
-      groundClearance:f('wheel-ground-clearance',0.005),
-      wheelbase:      f('wheel-wheelbase',       0.22),
-      track:          f('wheel-track',           0.32),
+      radius: f('wheel-radius', 0.065),
+      width: f('wheel-width', 0.030),
+      mass: f('wheel-mass', 0.25),
+      groundClearance: f('wheel-ground-clearance', 0.005),
+      wheelbase: f('wheel-wheelbase', 0.22),
+      track: f('wheel-track', 0.32),
     },
 
     caster: {
-      radius:  f('caster-radius',   0.020),
+      radius: f('caster-radius', 0.020),
       offsetX: f('caster-offset-x', -0.15),
     },
 
     sensors: sensors.map(s => ({
-      id:    s.id,
-      type:  s.type,
-      name:  s.name,
-      x:     s.x,
-      y:     s.y,
-      z:     s.z,
+      id: s.id,
+      type: s.type,
+      name: s.name,
+      x: s.x,
+      y: s.y,
+      z: s.z,
     })),
   };
 }
@@ -279,91 +279,83 @@ function readState() {
  *   local +Z = ROS -Y (right in ROS = left in Three.js world after rot)
  * So we map: mesh.position.set(rx, rz, -ry)
  */
+/**
+ * REEMPLAZA TUS FUNCIONES rosPos y buildScene POR ESTAS:
+ */
+
 function rosPos(mesh, rx, ry, rz) {
-  mesh.position.set(rx, rz, -ry);
+  // Ahora el mapeo es directo porque el grupo ya está rotado correctamente a Z-up
+  mesh.position.set(rx, ry, rz);
 }
 
 function buildScene() {
   clearRobotMeshes();
   readState();
 
-  const st  = robotState;
-  const ch  = st.chassis;
-  const wh  = st.wheels;
+  const st = robotState;
+  const ch = st.chassis;
+  const wh = st.wheels;
 
-  // Chassis Z offset from ground:
-  // The chassis bottom sits at: wheelRadius + groundClearance
-  // Chassis centre Z = wheelRadius + groundClearance + chassisHeight/2
+  // Centro del chasis en Z
   const chassisZ = wh.radius + wh.groundClearance + ch.height / 2;
 
   // ── Chassis ──────────────────────────────────────────────────────────────
-  const chassisGeo = new THREE.BoxGeometry(ch.length, ch.height, ch.width);
+  // Dimensiones correctas: X (Length), Y (Width), Z (Height)
+  const chassisGeo = new THREE.BoxGeometry(ch.length, ch.width, ch.height);
   const chassisMesh = new THREE.Mesh(chassisGeo, MAT.chassis);
-  chassisMesh.castShadow    = true;
+  chassisMesh.castShadow = true;
   chassisMesh.receiveShadow = true;
   rosPos(chassisMesh, 0, 0, chassisZ);
   robotMeshGroup.add(chassisMesh);
 
-  // Chassis edge glow lines
-  const edgesGeo  = new THREE.EdgesGeometry(chassisGeo);
-  const edgesMat  = new THREE.LineBasicMaterial({ color: 0x6c63ff, transparent: true, opacity: 0.4 });
+  // Líneas brillantes del chasis
+  const edgesGeo = new THREE.EdgesGeometry(chassisGeo);
+  const edgesMat = new THREE.LineBasicMaterial({ color: 0x6c63ff, transparent: true, opacity: 0.4 });
   const edgeLines = new THREE.LineSegments(edgesGeo, edgesMat);
-  chassisMesh.add(edgeLines); // child of chassis
+  chassisMesh.add(edgeLines);
 
   // ── Wheels ────────────────────────────────────────────────────────────────
-  // Wheel cylinder in Three.js: axis along Y by default.
-  // In the rosGroup frame, local Y = ROS Z (up).
-  // For wheels spinning around ROS Y axis, we need the cylinder axis aligned
-  // with local Z (= ROS -Y, i.e. across the robot).
-  // So rotate the wheel mesh by PI/2 around local X.
-
   const halfWheelbase = wh.wheelbase / 2;
-  const halfTrack     = wh.track     / 2;
+  const halfTrack = wh.track / 2;
 
-  const wheelGeo     = new THREE.CylinderGeometry(wh.radius, wh.radius, wh.width, 32);
-  const wheelRimGeo  = new THREE.CylinderGeometry(wh.radius * 0.5, wh.radius * 0.5, wh.width + 0.002, 8);
+  // En Three.js el cilindro se crea a lo largo del eje Y. 
+  // En nuestro sistema, Y es Izquierda/Derecha, ¡así que NO necesitan rotación!
+  const wheelGeo = new THREE.CylinderGeometry(wh.radius, wh.radius, wh.width, 32);
+  const wheelRimGeo = new THREE.CylinderGeometry(wh.radius * 0.5, wh.radius * 0.5, wh.width + 0.002, 8);
 
   function addWheel(rx, ry, rz) {
     const wMesh = new THREE.Mesh(wheelGeo, MAT.wheel);
-    wMesh.rotation.x  = Math.PI / 2; // align cylinder axis with ROS Y
-    wMesh.castShadow  = true;
+    wMesh.castShadow = true;
     rosPos(wMesh, rx, ry, rz);
     robotMeshGroup.add(wMesh);
 
-    // Rim accent
     const rim = new THREE.Mesh(wheelRimGeo, MAT.wheelRim);
-    rim.rotation.x = Math.PI / 2;
     rosPos(rim, rx, ry, rz);
     robotMeshGroup.add(rim);
   }
 
-  // Wheel positions (ROS frame): Z = wheel radius centre
   const wz = wh.radius;
 
   if (st.driveType === 'diff') {
-    // 2 drive wheels at centre X, ±track/2 Y
-    addWheel(0,  halfTrack, wz);
+    addWheel(0, halfTrack, wz);
     addWheel(0, -halfTrack, wz);
 
-    // Front caster
     const castR = st.caster.radius;
-    const castGeo  = new THREE.SphereGeometry(castR, 16, 16);
+    const castGeo = new THREE.SphereGeometry(castR, 16, 16);
     const castMesh = new THREE.Mesh(castGeo, MAT.caster);
     castMesh.castShadow = true;
     rosPos(castMesh, st.caster.offsetX, 0, castR);
     robotMeshGroup.add(castMesh);
 
-    // Also a rear caster at -offsetX
     const castMesh2 = new THREE.Mesh(castGeo, MAT.caster);
     castMesh2.castShadow = true;
     rosPos(castMesh2, -st.caster.offsetX, 0, castR);
     robotMeshGroup.add(castMesh2);
 
   } else {
-    // 4-wheel skid steer: front-left, front-right, rear-left, rear-right
-    addWheel( halfWheelbase,  halfTrack, wz);
-    addWheel( halfWheelbase, -halfTrack, wz);
-    addWheel(-halfWheelbase,  halfTrack, wz);
+    addWheel(halfWheelbase, halfTrack, wz);
+    addWheel(halfWheelbase, -halfTrack, wz);
+    addWheel(-halfWheelbase, halfTrack, wz);
     addWheel(-halfWheelbase, -halfTrack, wz);
   }
 
@@ -373,20 +365,20 @@ function buildScene() {
     let mesh;
 
     if (sensor.type === 'lidar') {
-      // LiDAR: flat cylinder (spinning disc)
       const r = 0.052, h = 0.072;
       const geo = new THREE.CylinderGeometry(r, r, h, 32);
       mesh = new THREE.Mesh(geo, mat);
-      // No rotation: cylinder Y is up = ROS Z → correct for lidar standing upright
+      // El LiDAR gira en el eje Z (Up), así que rotamos el cilindro para que quede de pie
+      mesh.rotation.x = Math.PI / 2;
     } else if (sensor.type === 'camera') {
       const geo = new THREE.BoxGeometry(0.06, 0.04, 0.035);
       mesh = new THREE.Mesh(geo, mat);
-      // Camera lens accent
       const lensGeo = new THREE.CylinderGeometry(0.01, 0.01, 0.012, 12);
       const lensMesh = new THREE.Mesh(lensGeo, new THREE.MeshStandardMaterial({
         color: 0x111111, roughness: 0.1, metalness: 0.9
       }));
-      lensMesh.rotation.z = Math.PI / 2; // point along X
+      // Lente mirando hacia el frente (Eje X)
+      lensMesh.rotation.z = -Math.PI / 2;
       lensMesh.position.set(0.036, 0, 0);
       mesh.add(lensMesh);
     } else if (sensor.type === 'depth_camera') {
@@ -402,23 +394,22 @@ function buildScene() {
 
     mesh.castShadow = true;
 
-    // Sensor pos is offset relative to chassis centre
     const absX = sensor.x;
     const absY = sensor.y;
     const absZ = chassisZ + ch.height / 2 + sensor.z;
     rosPos(mesh, absX, absY, absZ);
     robotMeshGroup.add(mesh);
 
-    // Thin connector line from chassis top to sensor
+    // Línea conectora
     const pts = [
-      new THREE.Vector3(absX, absZ, -absY), // Three.js after rosPos mapping
-      new THREE.Vector3(0,    chassisZ + ch.height / 2, 0),
+      new THREE.Vector3(absX, absY, absZ),
+      new THREE.Vector3(0, 0, chassisZ + ch.height / 2),
     ];
     const lineMat = new THREE.LineBasicMaterial({
       color: 0x444466, transparent: true, opacity: 0.5
     });
-    const lineGeo  = new THREE.BufferGeometry().setFromPoints(pts);
-    const line     = new THREE.Line(lineGeo, lineMat);
+    const lineGeo = new THREE.BufferGeometry().setFromPoints(pts);
+    const line = new THREE.Line(lineGeo, lineMat);
     robotMeshGroup.add(line);
   });
 
@@ -435,9 +426,9 @@ function fmt(n) { return Number(n).toFixed(6); }
 /** Inertia for a solid box: dimensions x, y, z (meters), mass m */
 function boxInertia(m, x, y, z) {
   return {
-    ixx: (1/12) * m * (y*y + z*z),
-    iyy: (1/12) * m * (x*x + z*z),
-    izz: (1/12) * m * (x*x + y*y),
+    ixx: (1 / 12) * m * (y * y + z * z),
+    iyy: (1 / 12) * m * (x * x + z * z),
+    izz: (1 / 12) * m * (x * x + y * y),
     ixy: 0, ixz: 0, iyz: 0,
   };
 }
@@ -453,8 +444,8 @@ function boxInertia(m, x, y, z) {
  * set all three consistently. The URDF axis tag handles rotation direction.
  */
 function cylinderInertia(m, r, h) {
-  const ixx_iyy = (1/12) * m * (3*r*r + h*h);
-  const izz     = (1/2)  * m * r * r;
+  const ixx_iyy = (1 / 12) * m * (3 * r * r + h * h);
+  const izz = (1 / 2) * m * r * r;
   return {
     ixx: ixx_iyy,
     iyy: ixx_iyy,
@@ -465,7 +456,7 @@ function cylinderInertia(m, r, h) {
 
 /** Sphere inertia (for caster balls) */
 function sphereInertia(m, r) {
-  const i = (2/5) * m * r * r;
+  const i = (2 / 5) * m * r * r;
   return { ixx: i, iyy: i, izz: i, ixy: 0, ixz: 0, iyz: 0 };
 }
 
@@ -568,17 +559,17 @@ function jointBlock(name, type, parent, child, ox, oy, oz, rr, rp, ry_ang, axisX
 
 /** Sensor geometry dimensions */
 const SENSOR_DIMS = {
-  lidar:        { type: 'cylinder', radius: 0.052, length: 0.072 },
-  camera:       { type: 'box',      x: 0.060, y: 0.040, z: 0.035 },
-  depth_camera: { type: 'box',      x: 0.080, y: 0.025, z: 0.030 },
-  imu:          { type: 'box',      x: 0.040, y: 0.040, z: 0.012 },
+  lidar: { type: 'cylinder', radius: 0.052, length: 0.072 },
+  camera: { type: 'box', x: 0.060, y: 0.040, z: 0.035 },
+  depth_camera: { type: 'box', x: 0.080, y: 0.025, z: 0.030 },
+  imu: { type: 'box', x: 0.040, y: 0.040, z: 0.012 },
 };
 
 const SENSOR_MASS = {
-  lidar:        0.200,
-  camera:       0.100,
+  lidar: 0.200,
+  camera: 0.100,
   depth_camera: 0.150,
-  imu:          0.030,
+  imu: 0.030,
 };
 
 function sensorLink(sensor) {
@@ -609,12 +600,12 @@ function buildURDF() {
   const wheelJointZ = -(ch.height / 2) - wh.groundClearance - wh.radius;
 
   // Half-dimensions
-  const halfW     = wh.track     / 2;
-  const halfWB    = wh.wheelbase / 2;
+  const halfW = wh.track / 2;
+  const halfWB = wh.wheelbase / 2;
 
-  let links  = '';
+  let links = '';
   let joints = '';
-  let mats   = '';
+  let mats = '';
 
   // ── Materials block ──────────────────────────────────────────────────────
   mats = `
@@ -646,7 +637,7 @@ function buildURDF() {
     <link name="base_link"/>`;
 
   // ── chassis ──────────────────────────────────────────────────────────────
-  links  += boxLink('chassis', ch.mass, ch.length, ch.width, ch.height);
+  links += boxLink('chassis', ch.mass, ch.length, ch.width, ch.height);
   joints += jointBlock(
     'base_link_to_chassis', 'fixed',
     'base_link', 'chassis',
@@ -656,7 +647,7 @@ function buildURDF() {
   // ── wheels ───────────────────────────────────────────────────────────────
   if (st.driveType === 'diff') {
     // Left drive wheel (ROS Y positive = left)
-    links  += cylinderLink('left_wheel',  wh.mass, wh.radius, wh.width);
+    links += cylinderLink('left_wheel', wh.mass, wh.radius, wh.width);
     joints += jointBlock(
       'chassis_to_left_wheel', 'continuous',
       'chassis', 'left_wheel',
@@ -665,7 +656,7 @@ function buildURDF() {
     );
 
     // Right drive wheel (ROS Y negative = right)
-    links  += cylinderLink('right_wheel', wh.mass, wh.radius, wh.width);
+    links += cylinderLink('right_wheel', wh.mass, wh.radius, wh.width);
     joints += jointBlock(
       'chassis_to_right_wheel', 'continuous',
       'chassis', 'right_wheel',
@@ -679,14 +670,14 @@ function buildURDF() {
     // Caster Z in chassis frame: bottom of chassis + caster radius
     const casterZ = -(ch.height / 2) - cr;
 
-    links  += sphereLink('front_caster', cr * 0.05, cr); // lightweight
+    links += sphereLink('front_caster', cr * 0.05, cr); // lightweight
     joints += jointBlock(
       'chassis_to_front_caster', 'fixed',
       'chassis', 'front_caster',
       Math.abs(casterFrontX), 0, casterZ, 0, 0, 0
     );
 
-    links  += sphereLink('rear_caster', cr * 0.05, cr);
+    links += sphereLink('rear_caster', cr * 0.05, cr);
     joints += jointBlock(
       'chassis_to_rear_caster', 'fixed',
       'chassis', 'rear_caster',
@@ -696,14 +687,14 @@ function buildURDF() {
   } else {
     // 4-wheel skid steer
     const wheelDefs = [
-      { name: 'front_left_wheel',  x:  halfWB, y:  halfW },
-      { name: 'front_right_wheel', x:  halfWB, y: -halfW },
-      { name: 'rear_left_wheel',   x: -halfWB, y:  halfW },
-      { name: 'rear_right_wheel',  x: -halfWB, y: -halfW },
+      { name: 'front_left_wheel', x: halfWB, y: halfW },
+      { name: 'front_right_wheel', x: halfWB, y: -halfW },
+      { name: 'rear_left_wheel', x: -halfWB, y: halfW },
+      { name: 'rear_right_wheel', x: -halfWB, y: -halfW },
     ];
 
     wheelDefs.forEach(w => {
-      links  += cylinderLink(w.name, wh.mass, wh.radius, wh.width);
+      links += cylinderLink(w.name, wh.mass, wh.radius, wh.width);
       joints += jointBlock(
         `chassis_to_${w.name}`, 'continuous',
         'chassis', w.name,
@@ -715,7 +706,7 @@ function buildURDF() {
 
   // ── sensors ───────────────────────────────────────────────────────────────
   st.sensors.forEach(sensor => {
-    links  += sensorLink(sensor);
+    links += sensorLink(sensor);
     // Sensor joint origin: offset from chassis (top of chassis = ch.height/2)
     // The sensor.z is relative to the top of the chassis
     joints += jointBlock(
@@ -727,7 +718,7 @@ function buildURDF() {
   });
 
   // ── Assemble ──────────────────────────────────────────────────────────────
-  const timestamp  = new Date().toISOString();
+  const timestamp = new Date().toISOString();
   const driveLabel = st.driveType === 'diff' ? 'Differential Drive (2-wheel + casters)' : '4-Wheel Skid-Steer';
 
   const urdf = `<?xml version="1.0"?>
@@ -763,30 +754,30 @@ function buildURDF() {
 ═══════════════════════════════════════════════════════════════════════════ */
 
 function updateStatusBar() {
-  const st   = robotState;
+  const st = robotState;
   const driveLinks = st.driveType === 'diff' ? 5 : 5; // base+chassis+2wheels+casters or 4wheels
 
-  let linkCount  = 2; // base_link + chassis
+  let linkCount = 2; // base_link + chassis
   let jointCount = 1; // base_to_chassis
 
   if (st.driveType === 'diff') {
-    linkCount  += 4; // left, right wheels + 2 casters
+    linkCount += 4; // left, right wheels + 2 casters
     jointCount += 4;
   } else {
-    linkCount  += 4;
+    linkCount += 4;
     jointCount += 4;
   }
 
-  linkCount  += st.sensors.length;
+  linkCount += st.sensors.length;
   jointCount += st.sensors.length;
 
-  document.getElementById('status-link-count').textContent  = `${linkCount} links`;
+  document.getElementById('status-link-count').textContent = `${linkCount} links`;
   document.getElementById('status-joint-count').textContent = `${jointCount} joints`;
 
   const ind = document.getElementById('status-indicator');
   const txt = document.getElementById('status-text');
-  ind.className       = 'status-indicator';
-  txt.textContent     = `${st.robotName || 'my_robot'} · ${st.driveType === 'diff' ? 'Diff Drive' : 'Skid Steer'} · ${st.sensors.length} sensor(s)`;
+  ind.className = 'status-indicator';
+  txt.textContent = `${st.robotName || 'my_robot'} · ${st.driveType === 'diff' ? 'Diff Drive' : 'Skid Steer'} · ${st.sensors.length} sensor(s)`;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -794,10 +785,10 @@ function updateStatusBar() {
 ═══════════════════════════════════════════════════════════════════════════ */
 
 const SENSOR_TYPES = [
-  { value: 'lidar',        label: 'LiDAR',        cssClass: 'dot-lidar',        color: '#ffd166' },
-  { value: 'camera',       label: 'Camera',        cssClass: 'dot-camera',       color: '#06d6a0' },
-  { value: 'depth_camera', label: 'Depth Camera',  cssClass: 'dot-depth_camera', color: '#118ab2' },
-  { value: 'imu',          label: 'IMU',           cssClass: 'dot-imu',          color: '#ef476f' },
+  { value: 'lidar', label: 'LiDAR', cssClass: 'dot-lidar', color: '#ffd166' },
+  { value: 'camera', label: 'Camera', cssClass: 'dot-camera', color: '#06d6a0' },
+  { value: 'depth_camera', label: 'Depth Camera', cssClass: 'dot-depth_camera', color: '#118ab2' },
+  { value: 'imu', label: 'IMU', cssClass: 'dot-imu', color: '#ef476f' },
 ];
 
 function sensorTypeInfo(type) {
@@ -805,20 +796,20 @@ function sensorTypeInfo(type) {
 }
 
 function addSensorCard(initialType = 'lidar') {
-  const id    = ++sensorCounter;
-  const info  = sensorTypeInfo(initialType);
+  const id = ++sensorCounter;
+  const info = sensorTypeInfo(initialType);
   const sName = `${initialType}_${id}`;
 
   // Push to sensor array
   sensors.push({ id, type: initialType, name: sName, x: 0, y: 0, z: 0.01 });
 
   const container = document.getElementById('sensors-container');
-  const empty     = document.getElementById('sensors-empty');
+  const empty = document.getElementById('sensors-empty');
   if (empty) empty.style.display = 'none';
 
   const card = document.createElement('div');
-  card.className   = `sensor-card sensor-type--${initialType}`;
-  card.id          = `sensor-card-${id}`;
+  card.className = `sensor-card sensor-type--${initialType}`;
+  card.id = `sensor-card-${id}`;
   card.dataset.sid = id;
 
   card.innerHTML = `
@@ -839,8 +830,8 @@ function addSensorCard(initialType = 'lidar') {
         <label class="form-label" for="sensor-type-${id}">Type</label>
         <select id="sensor-type-${id}" class="form-select" data-sid="${id}">
           ${SENSOR_TYPES.map(t =>
-            `<option value="${t.value}"${t.value === initialType ? ' selected' : ''}>${t.label}</option>`
-          ).join('')}
+    `<option value="${t.value}"${t.value === initialType ? ' selected' : ''}>${t.label}</option>`
+  ).join('')}
         </select>
       </div>
     </div>
@@ -864,16 +855,16 @@ function addSensorCard(initialType = 'lidar') {
 
   // Bind events for this card
   card.querySelector(`#sensor-type-${id}`).addEventListener('change', (e) => {
-    const sid   = parseInt(e.target.dataset.sid);
+    const sid = parseInt(e.target.dataset.sid);
     const entry = sensors.find(s => s.id === sid);
     if (!entry) return;
     const newType = e.target.value;
-    entry.type    = newType;
+    entry.type = newType;
     // Update name if it was the default
     const nameEl = document.getElementById(`sensor-name-${sid}`);
     if (nameEl.value === `${entry.type}_${sid}` || nameEl.value.startsWith(entry.type.split('_')[0])) {
       nameEl.value = `${newType}_${sid}`;
-      entry.name   = nameEl.value;
+      entry.name = nameEl.value;
     }
     // Update card styling
     const info2 = sensorTypeInfo(newType);
@@ -886,7 +877,7 @@ function addSensorCard(initialType = 'lidar') {
   });
 
   card.querySelector(`#sensor-name-${id}`).addEventListener('input', (e) => {
-    const sid   = parseInt(e.target.dataset.sid);
+    const sid = parseInt(e.target.dataset.sid);
     const entry = sensors.find(s => s.id === sid);
     if (entry) { entry.name = e.target.value || `sensor_${sid}`; }
     onAnyChange();
@@ -894,7 +885,7 @@ function addSensorCard(initialType = 'lidar') {
 
   ['x', 'y', 'z'].forEach(axis => {
     card.querySelector(`#sensor-${axis}-${id}`).addEventListener('input', (e) => {
-      const sid   = parseInt(e.target.dataset.sid);
+      const sid = parseInt(e.target.dataset.sid);
       const entry = sensors.find(s => s.id === sid);
       if (entry) { entry[axis] = parseFloat(e.target.value) || 0; }
       onAnyChange();
@@ -965,7 +956,7 @@ function syntaxHighlightURDF(xml) {
 
 function refreshURDFPreview() {
   const content = document.getElementById('urdf-preview-content');
-  const urdf    = buildURDF();
+  const urdf = buildURDF();
   content.innerHTML = syntaxHighlightURDF(urdf);
   content.scrollTop = 0;
 }
@@ -996,24 +987,24 @@ document.getElementById('btn-add-sensor').addEventListener('click', () => {
 
 // Download URDF
 document.getElementById('btn-download-urdf').addEventListener('click', () => {
-  const urdf     = buildURDF();
-  const blob     = new Blob([urdf], { type: 'text/xml;charset=utf-8' });
-  const url      = URL.createObjectURL(blob);
-  const a        = document.createElement('a');
-  a.href         = url;
-  a.download     = `${(robotState.robotName || 'my_robot').replace(/\s+/g,'_')}.urdf`;
+  const urdf = buildURDF();
+  const blob = new Blob([urdf], { type: 'text/xml;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${(robotState.robotName || 'my_robot').replace(/\s+/g, '_')}.urdf`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 
   // Brief visual feedback on button
-  const btn       = document.getElementById('btn-download-urdf');
+  const btn = document.getElementById('btn-download-urdf');
   const origLabel = btn.innerHTML;
-  btn.innerHTML   = `<svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg> Downloaded!`;
+  btn.innerHTML = `<svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg> Downloaded!`;
   btn.style.background = 'linear-gradient(135deg, #00d4aa, #00a884)';
   setTimeout(() => {
-    btn.innerHTML        = origLabel;
+    btn.innerHTML = origLabel;
     btn.style.background = '';
   }, 2000);
 });
