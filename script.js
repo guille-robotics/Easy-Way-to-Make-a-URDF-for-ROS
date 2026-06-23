@@ -263,6 +263,9 @@ function readState() {
       x: s.x,
       y: s.y,
       z: s.z,
+      roll: s.roll  || 0,
+      pitch: s.pitch || 0,
+      yaw: s.yaw   || 0,
     })),
   };
 }
@@ -364,11 +367,14 @@ function buildScene() {
     const mat = sensorMat(sensor.type);
     let mesh;
 
+    // Build the mesh with its baseline visual orientation.
+    // A Group is used so we can keep the baseline rotation on the mesh
+    // and apply the user's ROS RPY on the group cleanly.
     if (sensor.type === 'lidar') {
       const r = 0.052, h = 0.072;
       const geo = new THREE.CylinderGeometry(r, r, h, 32);
       mesh = new THREE.Mesh(geo, mat);
-      // El LiDAR gira en el eje Z (Up), así que rotamos el cilindro para que quede de pie
+      // Baseline: cylinder stands upright (its local Y aligns with ROS Z)
       mesh.rotation.x = Math.PI / 2;
     } else if (sensor.type === 'camera') {
       const geo = new THREE.BoxGeometry(0.06, 0.04, 0.035);
@@ -394,11 +400,23 @@ function buildScene() {
 
     mesh.castShadow = true;
 
+    // Wrap the mesh in a group so baseline rotation stays on the mesh
+    // and the user's RPY offset is applied to the group.
+    const sensorGroup = new THREE.Group();
+    sensorGroup.add(mesh);
+
+    // Convert user degrees → radians and apply ROS RPY (ZYX intrinsic)
+    const toRad = deg => deg * Math.PI / 180;
+    const rollRad  = toRad(sensor.roll  || 0);
+    const pitchRad = toRad(sensor.pitch || 0);
+    const yawRad   = toRad(sensor.yaw   || 0);
+    sensorGroup.rotation.set(rollRad, pitchRad, yawRad, 'ZYX');
+
     const absX = sensor.x;
     const absY = sensor.y;
     const absZ = chassisZ + ch.height / 2 + sensor.z;
-    rosPos(mesh, absX, absY, absZ);
-    robotMeshGroup.add(mesh);
+    rosPos(sensorGroup, absX, absY, absZ);
+    robotMeshGroup.add(sensorGroup);
 
     // Línea conectora
     const pts = [
@@ -708,12 +726,17 @@ function buildURDF() {
   st.sensors.forEach(sensor => {
     links += sensorLink(sensor);
     // Sensor joint origin: offset from chassis (top of chassis = ch.height/2)
-    // The sensor.z is relative to the top of the chassis
+    // The sensor.z is relative to the top of the chassis.
+    // RPY inputs are in degrees → convert to radians for URDF.
+    const toRad = deg => deg * Math.PI / 180;
+    const sRoll  = toRad(sensor.roll  || 0);
+    const sPitch = toRad(sensor.pitch || 0);
+    const sYaw   = toRad(sensor.yaw   || 0);
     joints += jointBlock(
       `chassis_to_${sensor.name}`, 'fixed',
       'chassis', sensor.name,
       sensor.x, sensor.y, ch.height / 2 + sensor.z,
-      0, 0, 0
+      sRoll, sPitch, sYaw
     );
   });
 
@@ -801,7 +824,7 @@ function addSensorCard(initialType = 'lidar') {
   const sName = `${initialType}_${id}`;
 
   // Push to sensor array
-  sensors.push({ id, type: initialType, name: sName, x: 0, y: 0, z: 0.01 });
+  sensors.push({ id, type: initialType, name: sName, x: 0, y: 0, z: 0.01, roll: 0, pitch: 0, yaw: 0 });
 
   const container = document.getElementById('sensors-container');
   const empty = document.getElementById('sensors-empty');
@@ -849,6 +872,21 @@ function addSensorCard(initialType = 'lidar') {
         <label class="form-label" for="sensor-z-${id}">Offset Z <span class="unit">m</span></label>
         <input type="number" id="sensor-z-${id}" class="form-input" value="0.01" step="0.005" data-sid="${id}"/>
       </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label" for="sensor-roll-${id}">Roll (X) <span class="unit">deg</span></label>
+        <input type="number" id="sensor-roll-${id}" class="form-input" value="0" step="1" data-sid="${id}"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="sensor-pitch-${id}">Pitch (Y) <span class="unit">deg</span></label>
+        <input type="number" id="sensor-pitch-${id}" class="form-input" value="0" step="1" data-sid="${id}"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="sensor-yaw-${id}">Yaw (Z) <span class="unit">deg</span></label>
+        <input type="number" id="sensor-yaw-${id}" class="form-input" value="0" step="1" data-sid="${id}"/>
+      </div>
     </div>`;
 
   container.appendChild(card);
@@ -883,7 +921,7 @@ function addSensorCard(initialType = 'lidar') {
     onAnyChange();
   });
 
-  ['x', 'y', 'z'].forEach(axis => {
+  ['x', 'y', 'z', 'roll', 'pitch', 'yaw'].forEach(axis => {
     card.querySelector(`#sensor-${axis}-${id}`).addEventListener('input', (e) => {
       const sid = parseInt(e.target.dataset.sid);
       const entry = sensors.find(s => s.id === sid);
