@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Easy Way to Make a URDF</title>
+  <meta name="description" content="A browser-based tool to visually design and generate URDF robot description files for ROS/ROS2 differential drive and 4-wheel skid-steer robots, with real-time 3D preview." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- ═══════════════════════════════════════════
+       HEADER
+  ═══════════════════════════════════════════ -->
+  <header class="app-header" role="banner">
+    <div class="header-brand">
+      <div class="brand-icon" aria-hidden="true">
+        <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="8" y="10" width="16" height="10" rx="2" fill="#6c63ff" opacity="0.9"/>
+          <circle cx="10" cy="22" r="3" fill="#00d4aa"/>
+          <circle cx="22" cy="22" r="3" fill="#00d4aa"/>
+          <rect x="13" y="6" width="6" height="5" rx="1" fill="#ff6b9d" opacity="0.85"/>
+          <circle cx="16" cy="14" r="1.5" fill="#fff" opacity="0.7"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <h1 class="brand-title">Easy Way to Make a URDF</h1>
+        <p class="brand-subtitle">Visual Robot Description File Generator &mdash; ROS/ROS2 Ready</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <span class="ros-badge" title="ROS REP-103 Z-up compliant">
+        <span class="badge-dot"></span>
+        ROS REP-103
+      </span>
+      <button id="btn-download-urdf" class="btn-download" aria-label="Download generated URDF file">
+        <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
+        </svg>
+        Download URDF
+      </button>
+    </div>
+  </header>
+
+  <!-- ═══════════════════════════════════════════
+       MAIN LAYOUT
+  ═══════════════════════════════════════════ -->
+  <main class="app-layout" role="main">
+
+    <!-- ── SIDEBAR / CONTROL PANEL ── -->
+    <aside class="sidebar" id="sidebar" role="complementary" aria-label="Robot configuration panel">
+      <div class="sidebar-inner">
+
+        <!-- Robot Name -->
+        <section class="panel-section" id="section-identity">
+          <div class="section-header">
+            <span class="section-icon">🤖</span>
+            <h2 class="section-title">Robot Identity</h2>
+          </div>
+          <div class="form-group">
+            <label for="robot-name" class="form-label">Robot Name</label>
+            <input type="text" id="robot-name" class="form-input" value="my_robot" placeholder="my_robot" autocomplete="off" spellcheck="false" />
+          </div>
+          <div class="form-group">
+            <label for="drive-type" class="form-label">Drive Type</label>
+            <select id="drive-type" class="form-select">
+              <option value="diff" selected>2-Wheel Differential Drive (+ casters)</option>
+              <option value="skid">4-Wheel Skid-Steer</option>
+            </select>
+          </div>
+        </section>
+
+        <!-- Chassis -->
+        <section class="panel-section" id="section-chassis">
+          <div class="section-header">
+            <span class="section-icon">📦</span>
+            <h2 class="section-title">Chassis</h2>
+            <span class="section-badge">BOX</span>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="chassis-length" class="form-label">Length X <span class="unit">m</span></label>
+              <input type="number" id="chassis-length" class="form-input" value="0.40" min="0.05" max="2.0" step="0.01" />
+            </div>
+            <div class="form-group">
+              <label for="chassis-width" class="form-label">Width Y <span class="unit">m</span></label>
+              <input type="number" id="chassis-width" class="form-input" value="0.30" min="0.05" max="2.0" step="0.01" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="chassis-height" class="form-label">Height Z <span class="unit">m</span></label>
+              <input type="number" id="chassis-height" class="form-input" value="0.12" min="0.02" max="1.0" step="0.01" />
+            </div>
+            <div class="form-group">
+              <label for="chassis-mass" class="form-label">Mass <span class="unit">kg</span></label>
+              <input type="number" id="chassis-mass" class="form-input" value="5.0" min="0.1" max="500" step="0.1" />
+            </div>
+          </div>
+        </section>
+
+        <!-- Wheels -->
+        <section class="panel-section" id="section-wheels">
+          <div class="section-header">
+            <span class="section-icon">⚙️</span>
+            <h2 class="section-title">Wheels</h2>
+            <span class="section-badge">CYLINDER</span>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="wheel-radius" class="form-label">Radius <span class="unit">m</span></label>
+              <input type="number" id="wheel-radius" class="form-input" value="0.065" min="0.01" max="0.5" step="0.005" />
+            </div>
+            <div class="form-group">
+              <label for="wheel-width" class="form-label">Width <span class="unit">m</span></label>
+              <input type="number" id="wheel-width" class="form-input" value="0.030" min="0.005" max="0.3" step="0.005" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="wheel-mass" class="form-label">Mass <span class="unit">kg</span></label>
+              <input type="number" id="wheel-mass" class="form-input" value="0.25" min="0.01" max="50" step="0.01" />
+            </div>
+            <div class="form-group">
+              <label for="wheel-ground-clearance" class="form-label">Ground Clearance <span class="unit">m</span></label>
+              <input type="number" id="wheel-ground-clearance" class="form-input" value="0.005" min="0" max="0.1" step="0.001" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="wheel-wheelbase" class="form-label">Wheelbase <span class="unit">m</span></label>
+              <input type="number" id="wheel-wheelbase" class="form-input" value="0.22" min="0.05" max="2.0" step="0.01" />
+            </div>
+            <div class="form-group">
+              <label for="wheel-track" class="form-label">Track Width <span class="unit">m</span></label>
+              <input type="number" id="wheel-track" class="form-input" value="0.32" min="0.05" max="2.0" step="0.01" />
+            </div>
+          </div>
+          <!-- Caster config (shown only for diff drive) -->
+          <div id="caster-section">
+            <div class="subsection-divider">
+              <span>Caster Ball</span>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="caster-radius" class="form-label">Radius <span class="unit">m</span></label>
+                <input type="number" id="caster-radius" class="form-input" value="0.020" min="0.005" max="0.1" step="0.005" />
+              </div>
+              <div class="form-group">
+                <label for="caster-offset-x" class="form-label">Offset X <span class="unit">m</span></label>
+                <input type="number" id="caster-offset-x" class="form-input" value="-0.15" min="-1.0" max="1.0" step="0.01" />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Sensors -->
+        <section class="panel-section" id="section-sensors">
+          <div class="section-header">
+            <span class="section-icon">📡</span>
+            <h2 class="section-title">Sensors</h2>
+            <button id="btn-add-sensor" class="btn-add-sensor" aria-label="Add a new sensor to the robot">
+              <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2z"/></svg>
+              Add Sensor
+            </button>
+          </div>
+          <div id="sensors-container" aria-live="polite" aria-label="Sensor list">
+            <!-- Sensor cards injected here by JS -->
+            <p class="sensors-empty-hint" id="sensors-empty">No sensors added. Click "Add Sensor" to begin.</p>
+          </div>
+        </section>
+
+      </div><!-- /sidebar-inner -->
+    </aside>
+
+    <!-- ── 3D VIEWPORT ── -->
+    <div class="viewport-wrapper" id="viewport-wrapper" role="region" aria-label="3D robot preview">
+      <canvas id="three-canvas" aria-label="Interactive 3D robot preview. Use mouse to orbit, scroll to zoom."></canvas>
+
+      <!-- Overlay badges -->
+      <div class="viewport-overlay" aria-hidden="true">
+        <div class="axis-legend">
+          <div class="axis-item"><span class="axis-dot" style="background:#ff4d6d;"></span><span>X Forward</span></div>
+          <div class="axis-item"><span class="axis-dot" style="background:#4dff91;"></span><span>Y Left</span></div>
+          <div class="axis-item"><span class="axis-dot" style="background:#4d9fff;"></span><span>Z Up</span></div>
+        </div>
+        <div class="camera-hint">🖱 Orbit · Scroll Zoom · Right-drag Pan</div>
+      </div>
+
+      <!-- URDF preview panel toggled by btn -->
+      <div class="urdf-preview-panel" id="urdf-preview-panel" role="dialog" aria-modal="true" aria-label="URDF source preview" hidden>
+        <div class="urdf-preview-header">
+          <span>URDF Source Preview</span>
+          <button id="btn-close-preview" class="btn-icon" aria-label="Close URDF preview">✕</button>
+        </div>
+        <pre id="urdf-preview-content" class="urdf-code"></pre>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ── FOOTER STATUS BAR ── -->
+  <footer class="status-bar" role="contentinfo">
+    <div class="status-left">
+      <span class="status-indicator" id="status-indicator" title="Preview status">●</span>
+      <span id="status-text">Ready</span>
+    </div>
+    <div class="status-center">
+      <button id="btn-preview-urdf" class="btn-text" aria-label="Toggle URDF source preview">
+        &lt;/&gt; Preview URDF Source
+      </button>
+      <button id="btn-reset-camera" class="btn-text" aria-label="Reset camera to default view">
+        ⊹ Reset Camera
+      </button>
+    </div>
+    <div class="status-right">
+      <span id="status-link-count">0 links</span>
+      &nbsp;·&nbsp;
+      <span id="status-joint-count">0 joints</span>
+      &nbsp;·&nbsp;
+      <span class="status-ros">ROS2 Humble+</span>
+    </div>
+  </footer>
+
+  <!-- Three.js r165 via Import Map (modern ES-module approach, no bundler needed) -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/"
+    }
+  }
+  </script>
+  <script type="module" src="script.js"></script>
+</body>
+</html>
