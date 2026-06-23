@@ -247,8 +247,8 @@ function readState() {
       width: f('wheel-width', 0.030),
       mass: f('wheel-mass', 0.25),
       groundClearance: f('wheel-ground-clearance', 0.005),
-      wheelbase: f('wheel-wheelbase', 0.22),
-      track: f('wheel-track', 0.32),
+      offsetX: f('wheel-offset-x', 0.0),
+      offsetY: f('wheel-offset-y', 0.16),
     },
 
     caster: {
@@ -315,8 +315,8 @@ function buildScene() {
   chassisMesh.add(edgeLines);
 
   // ── Wheels ────────────────────────────────────────────────────────────────
-  const halfWheelbase = wh.wheelbase / 2;
-  const halfTrack = wh.track / 2;
+  const offX = wh.offsetX;
+  const offY = wh.offsetY;
 
   // En Three.js el cilindro se crea a lo largo del eje Y. 
   // En nuestro sistema, Y es Izquierda/Derecha, ¡así que NO necesitan rotación!
@@ -337,8 +337,8 @@ function buildScene() {
   const wz = wh.radius;
 
   if (st.driveType === 'diff') {
-    addWheel(0, halfTrack, wz);
-    addWheel(0, -halfTrack, wz);
+    addWheel(offX, offY, wz);
+    addWheel(offX, -offY, wz);
 
     const castR = st.caster.radius;
     const castGeo = new THREE.SphereGeometry(castR, 16, 16);
@@ -353,10 +353,10 @@ function buildScene() {
     robotMeshGroup.add(castMesh2);
 
   } else {
-    addWheel(halfWheelbase, halfTrack, wz);
-    addWheel(halfWheelbase, -halfTrack, wz);
-    addWheel(-halfWheelbase, halfTrack, wz);
-    addWheel(-halfWheelbase, -halfTrack, wz);
+    addWheel(offX, offY, wz);
+    addWheel(offX, -offY, wz);
+    addWheel(-offX, offY, wz);
+    addWheel(-offX, -offY, wz);
   }
 
   // ── Sensors ───────────────────────────────────────────────────────────────
@@ -599,9 +599,9 @@ function buildURDF() {
   // But joint origin is expressed in chassis frame:
   const wheelJointZ = -(ch.height / 2) - wh.groundClearance - wh.radius;
 
-  // Half-dimensions
-  const halfW = wh.track / 2;
-  const halfWB = wh.wheelbase / 2;
+  // Absolute offsets from chassis centre (no halving — user inputs are the exact distance)
+  const offX = wh.offsetX;
+  const offY = wh.offsetY;
 
   let links = '';
   let joints = '';
@@ -651,7 +651,7 @@ function buildURDF() {
     joints += jointBlock(
       'chassis_to_left_wheel', 'continuous',
       'chassis', 'left_wheel',
-      0, halfW, wheelJointZ,
+      offX, offY, wheelJointZ,
       0, 0, 0, '0 1 0'
     );
 
@@ -660,7 +660,7 @@ function buildURDF() {
     joints += jointBlock(
       'chassis_to_right_wheel', 'continuous',
       'chassis', 'right_wheel',
-      0, -halfW, wheelJointZ,
+      offX, -offY, wheelJointZ,
       0, 0, 0, '0 1 0'
     );
 
@@ -687,10 +687,10 @@ function buildURDF() {
   } else {
     // 4-wheel skid steer
     const wheelDefs = [
-      { name: 'front_left_wheel', x: halfWB, y: halfW },
-      { name: 'front_right_wheel', x: halfWB, y: -halfW },
-      { name: 'rear_left_wheel', x: -halfWB, y: halfW },
-      { name: 'rear_right_wheel', x: -halfWB, y: -halfW },
+      { name: 'front_left_wheel', x: offX, y: offY },
+      { name: 'front_right_wheel', x: offX, y: -offY },
+      { name: 'rear_left_wheel', x: -offX, y: offY },
+      { name: 'rear_right_wheel', x: -offX, y: -offY },
     ];
 
     wheelDefs.forEach(w => {
